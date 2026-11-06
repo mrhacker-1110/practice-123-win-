@@ -1,0 +1,30 @@
+{% extends "admin/index.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="module" style="margin-bottom: 20px;">
+    {% get_current_language as ADMIN_LANGUAGE %}
+    {% if ADMIN_LANGUAGE == 'ru' %}
+    <h2>Как устроен этот раздел</h2>
+    <div style="padding: 12px 16px;">
+        <p>Администрирование — служебная часть сайта для управления аккаунтами и просмотра записей. Для обычной работы со складом используй основные вкладки.</p>
+        <ol>
+            <li>Выбери нужный список, например «Товары» или «Пользователи».</li>
+            <li>Найди запись через поиск или фильтры.</li>
+            <li>Продажи, поставки и движения здесь доступны только для просмотра. Изменяй остатки через основные вкладки, чтобы история операций оставалась верной.</li>
+        </ol>
+    </div>
+    {% else %}
+    <h2>How this section works</h2>
+    <div style="padding: 12px 16px;">
+        <p>Administration is the service area for managing accounts and reviewing records. Use the main tabs for everyday warehouse work.</p>
+        <ol>
+            <li>Choose a list, such as Products or Users.</li>
+            <li>Find records with search or filters.</li>
+            <li>Sales, purchases, and movements are read-only here. Use the main tabs to change stock so the activity history stays accurate.</li>
+        </ol>
+    </div>
+    {% endif %}
+</div>
+{{ block.super }}
+{% endblock %}

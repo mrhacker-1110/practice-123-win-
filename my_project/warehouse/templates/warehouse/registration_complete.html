@@ -1,0 +1,16 @@
+{% extends 'warehouse/base.html' %}
+
+{% block title %}{{ ui.check_email }}{% endblock %}
+
+{% block content %}
+<section class="panel login-panel">
+    <p class="eyebrow">{{ ui.brand }}</p>
+    <h1>{{ ui.check_email }}</h1>
+    <p>{{ ui.verification_help }}</p>
+    <p class="help-text">{{ ui.check_spam_folder }}</p>
+    <div class="account-links">
+        <a class="btn btn-primary" href="{% url 'login' %}">{{ ui.login }}</a>
+        <a class="btn btn-secondary" href="{% url 'resend_verification' %}">{{ ui.resend_pending_email }}</a>
+    </div>
+</section>
+{% endblock %}

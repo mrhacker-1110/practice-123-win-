@@ -1,0 +1,11 @@
+{% if page_obj.has_other_pages %}
+<nav class="pagination" aria-label="{% if current_language == 'ru' %}Страницы{% else %}Pages{% endif %}">
+    {% if page_obj.has_previous %}
+    <a class="btn btn-secondary btn-small" href="{{ previous_page_url }}">{{ ui.previous }}</a>
+    {% endif %}
+    <span>{{ ui.page }} {{ page_obj.number }} {{ ui.of }} {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+    <a class="btn btn-secondary btn-small" href="{{ next_page_url }}">{{ ui.next }}</a>
+    {% endif %}
+</nav>
+{% endif %}

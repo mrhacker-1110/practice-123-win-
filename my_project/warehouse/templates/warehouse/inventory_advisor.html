@@ -1,0 +1,65 @@
+{% extends 'warehouse/base.html' %}
+
+{% block title %}{{ ui.advisor }} · {{ ui.brand }}{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="eyebrow">{{ ui.plans }} · Super</p>
+        <h1>{{ ui.advisor }}</h1>
+    </div>
+    {% if can_access %}
+    <span class="plan-ribbon">{{ ui.super }}</span>
+    {% endif %}
+</section>
+{% include 'warehouse/page_guide.html' %}
+
+{% if not can_access %}
+<section class="panel feature-locked">
+    <h2>{{ ui.advisor }}</h2>
+    <p>{{ ui.advisor_intro }}</p>
+    <p>{{ ui.no_external_ai }}</p>
+    <p>{{ ui.locked_feature }} Super.</p>
+    <a class="btn btn-primary" href="{% url 'plan_detail' 'super' %}">{{ ui.upgrade_to_plan }} Super</a>
+</section>
+{% else %}
+<section class="panel advisor-intro">
+    <p>{{ ui.advisor_intro }}</p>
+    <p>{{ ui.advisor_method }}</p>
+    <p class="help-text">{{ ui.no_external_ai }}</p>
+    <p class="help-text">{{ ui.products_analyzed }}: <strong>{{ products_analyzed }}</strong></p>
+</section>
+
+<section class="panel advisor-results">
+    <h2>{{ ui.reorder_suggestion }}</h2>
+    {% if suggestions %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>{{ ui.name }}</th>
+                    <th>{{ ui.stock }}</th>
+                    <th>{{ ui.sold_in_period }}</th>
+                    <th>{{ ui.recommended_stock }}</th>
+                    <th>{{ ui.quantity }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in suggestions %}
+                <tr class="{% if item.urgency == 'critical' %}advisor-critical{% else %}advisor-warning{% endif %}">
+                    <td>{{ item.product.name }} <span class="help-text">{{ item.product.sku }}</span></td>
+                    <td>{{ item.product.quantity }}</td>
+                    <td>{{ item.sold_units }}</td>
+                    <td>{{ item.recommended_stock }}</td>
+                    <td><strong>{{ item.reorder_quantity }}</strong></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p>{{ ui.no_reorder_needed }}</p>
+    {% endif %}
+</section>
+{% endif %}
+{% endblock %}

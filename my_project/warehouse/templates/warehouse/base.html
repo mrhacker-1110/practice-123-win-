@@ -1,0 +1,88 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="{{ current_language }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ ui.brand }}{% endblock %}</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'warehouse/favicon.svg' %}?v=20261106-1">
+    <link rel="stylesheet" href="{% static 'warehouse/css/styles.css' %}?v=20261106-9">
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="{% url 'dashboard' %}">{{ ui.brand }}</a>
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-navigation">
+            <span class="sr-only">{{ ui.menu }}</span>
+            <span aria-hidden="true">â˜°</span>
+        </button>
+        {% if request.user.is_authenticated %}
+            <nav class="nav" id="site-navigation">
+                <a class="{% if request.resolver_match.url_name == 'dashboard' %}is-active{% endif %}" href="{% url 'dashboard' %}">{{ ui.dashboard }}</a>
+                <a class="{% if request.resolver_match.url_name == 'products' or request.resolver_match.url_name == 'product_create' or request.resolver_match.url_name == 'product_update' or request.resolver_match.url_name == 'product_delete' or request.resolver_match.url_name == 'product_import' %}is-active{% endif %}" href="{% url 'products' %}">{{ ui.products }}</a>
+                {% if request.user.is_staff %}
+                <a class="{% if request.resolver_match.url_name == 'ai_consultant' %}is-active{% endif %}" href="{% url 'ai_consultant' %}">{% if current_language == 'ru' %}ИИ-консультант{% else %}AI consultant{% endif %}</a>
+                <a class="{% if request.resolver_match.url_name == 'inventory_advisor' %}is-active{% endif %}" href="{% url 'inventory_advisor' %}">{{ ui.advisor }}</a>
+                <a class="{% if request.resolver_match.url_name == 'stock_movements' %}is-active{% endif %}" href="{% url 'stock_movements' %}">{{ ui.movements }}</a>
+                <a class="{% if request.resolver_match.url_name == 'purchases' or request.resolver_match.url_name == 'purchase_create' %}is-active{% endif %}" href="{% url 'purchases' %}">{{ ui.purchases }}</a>
+                <a class="{% if request.resolver_match.url_name == 'suppliers' or request.resolver_match.url_name == 'supplier_create' %}is-active{% endif %}" href="{% url 'suppliers' %}">{{ ui.suppliers }}</a>
+                <a class="{% if request.resolver_match.url_name == 'customers' or request.resolver_match.url_name == 'customer_create' %}is-active{% endif %}" href="{% url 'customers' %}">{{ ui.customers }}</a>
+                <a class="{% if request.resolver_match.url_name == 'sales_report' or request.resolver_match.url_name == 'sale_create' %}is-active{% endif %}" href="{% url 'sales_report' %}">{{ ui.sales }}</a>
+                {% endif %}
+                <a class="{% if request.resolver_match.url_name == 'profile' %}is-active{% endif %}" href="{% url 'profile' %}">{{ ui.profile }}</a>
+                <a class="{% if request.resolver_match.url_name == 'plans' or request.resolver_match.url_name == 'plan_detail' %}is-active{% endif %}" href="{% url 'plans' %}">{{ ui.plans }}</a>
+                {% if request.user.is_superuser %}
+                <a href="{% url 'admin:index' %}">{{ ui.site_admin }}</a>
+                {% endif %}
+            </nav>
+        {% else %}
+            <nav class="nav" id="site-navigation">
+                <a class="{% if request.resolver_match.url_name == 'plans' or request.resolver_match.url_name == 'plan_detail' %}is-active{% endif %}" href="{% url 'plans' %}">{{ ui.plans }}</a>
+                <a class="{% if request.resolver_match.url_name == 'login' %}is-active{% endif %}" href="{% url 'login' %}">{{ ui.login }}</a>
+                <a class="{% if request.resolver_match.url_name == 'register' %}is-active{% endif %}" href="{% url 'register' %}">{{ ui.register }}</a>
+            </nav>
+        {% endif %}
+        <div class="topbar-actions">
+            <label class="sr-only" for="theme-select">{{ ui.theme }}</label>
+            <select id="theme-select" class="theme-select" aria-label="{{ ui.theme }}">
+                <option value="system">{{ ui.theme_system }}</option>
+                <option value="light">{{ ui.theme_light }}</option>
+                <option value="dark">{{ ui.theme_dark }}</option>
+            </select>
+            <form action="{% url 'set_language' %}" method="post" class="language-form">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <label class="sr-only" for="language-select">{{ ui.language }}</label>
+                <select id="language-select" name="language" onchange="this.form.submit()">
+                    <option value="ru" {% if current_language == 'ru' %}selected{% endif %}>Русский</option>
+                    <option value="en" {% if current_language == 'en' %}selected{% endif %}>English</option>
+                </select>
+            </form>
+            {% if request.user.is_authenticated %}
+            <form action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
+                <button class="btn btn-quiet" type="submit">{{ ui.logout }}</button>
+            </form>
+            {% endif %}
+        </div>
+    </header>
+
+    <main class="container">
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="message {{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+        <a href="{% url 'legal_information' 'terms' %}">{{ ui.terms_link }}</a>
+        <a href="{% url 'legal_information' 'privacy' %}">{{ ui.privacy_link }}</a>
+    </footer>
+
+    <script src="{% static 'warehouse/js/main.js' %}?v=20261106-10"></script>
+</body>
+</html>
+

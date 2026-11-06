@@ -1,0 +1,53 @@
+{% extends 'warehouse/base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="eyebrow">{{ ui.products }}</p>
+        <h1>{{ title }}</h1>
+    </div>
+</div>
+
+{% include 'warehouse/page_guide.html' %}
+<section class="panel form-panel">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% if not form.instance.pk %}
+        <section class="photo-assistant" aria-labelledby="photo-assistant-title">
+            <div>
+                <p class="eyebrow">{% if current_language == 'ru' %}Быстрое заполнение{% else %}Quick fill{% endif %}</p>
+                <h2 id="photo-assistant-title">{% if current_language == 'ru' %}Сфотографируйте товар{% else %}Take a product photo{% endif %}</h2>
+                <p class="help-text">{% if current_language == 'ru' %}Gemini предложит название и описание. Фото отправляется в Google Gemini. Проверьте и исправьте все поля перед сохранением.{% else %}Gemini will suggest a name and description. The photo is sent to Google Gemini. Review and edit every field before saving.{% endif %}</p>
+            </div>
+            <label class="photo-picker">
+                <span>{% if current_language == 'ru' %}Сделать фото или выбрать файл{% else %}Take a photo or choose a file{% endif %}</span>
+                <input id="product-photo" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,image/avif" capture="environment">
+            </label>
+            <img id="product-photo-preview" class="photo-preview" alt="{% if current_language == 'ru' %}Предпросмотр фото товара{% else %}Product photo preview{% endif %}" hidden>
+            <div class="photo-assistant-actions">
+                <button type="button" class="btn btn-secondary" id="analyze-product-photo" data-endpoint="{% url 'analyze_product_photo' %}" disabled>{% if current_language == 'ru' %}Распознать с Gemini{% else %}Identify with Gemini{% endif %}</button>
+                <span id="photo-analysis-status" class="help-text" role="status" aria-live="polite"></span>
+            </div>
+        </section>
+        {% endif %}
+        <div class="form-grid">
+            {% for field in form %}
+            <div class="field">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<small class="help-text">{{ field.help_text }}</small>{% endif %}
+                {% if field.errors %}
+                    <div class="error">{{ field.errors }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">{{ ui.save }}</button>
+            <a href="{% url 'products' %}" class="btn btn-secondary">{{ ui.cancel }}</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

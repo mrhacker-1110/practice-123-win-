@@ -1,0 +1,50 @@
+{% extends 'warehouse/base.html' %}
+
+{% block title %}{% if current_language == 'ru' %}ИИ-консультант{% else %}AI consultant{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="eyebrow">{% if current_language == 'ru' %}Поддержка склада{% else %}Warehouse support{% endif %}</p>
+        <h1>{% if current_language == 'ru' %}ИИ-консультант{% else %}AI consultant{% endif %}</h1>
+        <p class="help-text">{% if current_language == 'ru' %}Задай вопрос о работе склада или о том, как пользоваться приложением.{% else %}Ask about warehouse operations or how to use the app.{% endif %}</p>
+    </div>
+    <div class="header-actions">
+        <a class="btn btn-secondary" href="{% url 'product_create' %}">{% if current_language == 'ru' %}📷 Умная камера товара{% else %}📷 Smart product camera{% endif %}</a>
+    </div>
+</div>
+
+<section class="panel consultant-panel">
+    {% if not ai_configured %}
+    <div class="message info-message consultant-setup" role="status">
+        {% if current_language == 'ru' %}Сервер пока не видит GEMINI_API_KEY. Если ты уже задал ключ, перезапусти runserver в том же окне PowerShell.{% else %}The server cannot see GEMINI_API_KEY yet. If you already set it, restart runserver in the same PowerShell window.{% endif %}
+    </div>
+    {% endif %}
+    <p class="help-text consultant-privacy">{% if current_language == 'ru' %}Переписка сохраняется в твоём аккаунте и остаётся при переходе по сайту. Файлы отправляются в Google Gemini для анализа; приложение хранит имя файла, но не сам файл. Чтобы задать вопрос по вложению позже, прикрепи его снова.{% else %}Chat history is saved to your account and stays available as you move around the site. Files are sent to Google Gemini for analysis; the app stores the file name, not the file itself. Reattach a file to ask about it later.{% endif %}</p>
+    <div id="consultant-messages" class="consultant-messages" aria-live="polite" aria-label="{% if current_language == 'ru' %}Переписка с консультантом{% else %}Conversation with the consultant{% endif %}">
+        {% for message in chat_messages %}
+        <div class="consultant-message consultant-message-{{ message.role }}">
+            <span>{{ message.content|linebreaksbr }}</span>
+            {% if message.attachment_name %}<span class="consultant-attachment-chip">📎 {{ message.attachment_name }}</span>{% endif %}
+        </div>
+        {% empty %}
+        <div class="consultant-message consultant-message-model">{% if current_language == 'ru' %}Привет! Я помогу разобраться с учётом товаров, остатками, продажами и функциями приложения. Что хочешь узнать?{% else %}Hi! I can help with inventory, stock, sales, and app features. What would you like to know?{% endif %}</div>
+        {% endfor %}
+    </div>
+    <form id="consultant-form" class="consultant-form" data-endpoint="{% url 'ai_consultant_chat' %}">
+        {% csrf_token %}
+        <label class="sr-only" for="consultant-input">{% if current_language == 'ru' %}Твой вопрос{% else %}Your question{% endif %}</label>
+        <textarea id="consultant-input" name="message" rows="3" maxlength="4000" placeholder="{% if current_language == 'ru' %}Напиши свой вопрос…{% else %}Type your question…{% endif %}"></textarea>
+        <div class="consultant-attach-row">
+            <label class="btn btn-secondary consultant-attach-button" for="consultant-attachment">{% if current_language == 'ru' %}📎 Прикрепить файл или фото{% else %}📎 Attach file or photo{% endif %}</label>
+            <input id="consultant-attachment" name="attachment" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,image/avif,application/pdf,text/plain,text/csv,application/json">
+            <span id="consultant-attachment-name" class="help-text" aria-live="polite"></span>
+        </div>
+        <div class="consultant-form-footer">
+            <span class="help-text">{% if current_language == 'ru' %}Не отправляй пароли, API-ключи или платёжные данные.{% else %}Do not send passwords, API keys, or payment details.{% endif %}</span>
+            <button type="submit" class="btn btn-primary" id="consultant-send">{% if current_language == 'ru' %}Отправить{% else %}Send{% endif %}</button>
+        </div>
+        <p id="consultant-status" class="help-text" role="status" aria-live="polite"></p>
+    </form>
+</section>
+{% endblock %}

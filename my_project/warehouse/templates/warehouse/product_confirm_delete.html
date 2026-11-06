@@ -1,0 +1,18 @@
+{% extends 'warehouse/base.html' %}
+
+{% block title %}{{ ui.archive_title }}{% endblock %}
+
+{% block content %}
+<section class="panel delete-panel">
+    <h1>{{ ui.archive_title }}</h1>
+    <p>{% if current_language == 'ru' %}Товар{% else %}Product{% endif %}: <strong>{{ product.name }}</strong> ({{ product.sku }})</p>
+    <p>{% if current_language == 'ru' %}Товар будет скрыт из каталога, история операций останется.{% else %}This hides the product from the catalog but preserves its history.{% endif %}</p>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-actions">
+            <button type="submit" class="btn btn-danger">{{ ui.delete }}</button>
+            <a href="{% url 'products' %}" class="btn btn-secondary">{{ ui.cancel }}</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

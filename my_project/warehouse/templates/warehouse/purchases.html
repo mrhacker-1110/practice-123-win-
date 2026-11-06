@@ -1,0 +1,55 @@
+{% extends 'warehouse/base.html' %}
+
+{% block title %}{{ ui.purchases }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="eyebrow">{{ ui.operations }}</p>
+        <h1>{{ ui.purchases }}</h1>
+    </div>
+    <a class="btn btn-primary" href="{% url 'purchase_create' %}">{{ ui.receive_purchase }}</a>
+</div>
+
+{% include 'warehouse/page_guide.html' %}
+<div class="stats-grid">
+    <div class="stat-card">
+        <span>{{ ui.total_spend }}</span>
+        <strong>${{ total_spend|floatformat:2 }}</strong>
+    </div>
+</div>
+
+<section class="panel">
+    <table>
+        <thead>
+            <tr>
+                <th>{{ ui.product }}</th>
+                <th>{{ ui.supplier }}</th>
+                <th>{{ ui.quantity }}</th>
+                <th>{{ ui.unit_cost }}</th>
+                <th>{{ ui.total }}</th>
+                <th>{{ ui.reference }}</th>
+                <th>{{ ui.operator }}</th>
+                <th>{{ ui.date }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for purchase in purchases %}
+            <tr>
+                <td>{{ purchase.product.name }}</td>
+                <td>{{ purchase.supplier.name|default:"-" }}</td>
+                <td>{{ purchase.quantity }}</td>
+                <td>${{ purchase.unit_cost|floatformat:2 }}</td>
+                <td>${{ purchase.total_cost|floatformat:2 }}</td>
+                <td>{{ purchase.reference|default:"-" }}</td>
+                <td>{{ purchase.created_by.username|default:"-" }}</td>
+                <td>{{ purchase.received_at|date:"d M Y" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="8">{{ ui.no_purchases }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% include 'warehouse/pagination.html' with page_obj=purchases %}
+{% endblock %}

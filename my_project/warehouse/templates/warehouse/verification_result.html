@@ -1,0 +1,12 @@
+{% extends 'warehouse/base.html' %}
+
+{% block title %}{{ ui.check_email }}{% endblock %}
+
+{% block content %}
+<section class="panel login-panel">
+    <p class="eyebrow">{{ ui.brand }}</p>
+    <h1>{% if success %}{{ ui.email_verified }}{% else %}{{ ui.send_confirmation }}{% endif %}</h1>
+    <p>{{ message }}</p>
+    <a class="btn btn-primary" href="{% url 'login' %}">{{ ui.login }}</a>
+</section>
+{% endblock %}

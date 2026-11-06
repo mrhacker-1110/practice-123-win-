@@ -1,0 +1,50 @@
+{% extends 'warehouse/base.html' %}
+
+{% block title %}{{ ui.login_title }}{% endblock %}
+
+{% block content %}
+<section class="panel auth-card login-panel">
+    <div class="auth-header">
+        <p class="eyebrow">{{ ui.brand }}</p>
+        <h1>{{ ui.login_title }}</h1>
+        <p class="auth-subtitle">
+            {% if current_language == 'ru' %}Войдите в свою рабочую область и продолжайте управлять складом.{% else %}Sign in to your workspace and keep your inventory running smoothly.{% endif %}
+        </p>
+    </div>
+
+    {% if form.errors %}
+        <p class="message error-message" role="alert">{{ ui.login_error }}</p>
+    {% endif %}
+
+    <form method="post" data-live-validation data-valid-label="{{ ui.field_valid }}" data-invalid-label="{{ ui.field_invalid }}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ next }}">
+        <div class="field">
+            <label for="{{ form.username.id_for_label }}">{{ ui.username }}</label>
+            {{ form.username }}
+        </div>
+        <div class="field password-field">
+            <label for="{{ form.password.id_for_label }}">{{ ui.password }}</label>
+            <div class="password-input-wrap">
+                {{ form.password }}
+                <button type="button" class="password-toggle-btn" data-password-target="{{ form.password.id_for_label }}" aria-label="{% if current_language == 'ru' %}Показать пароль{% else %}Show password{% endif %}">
+                    {% if current_language == 'ru' %}Показать{% else %}Show{% endif %}
+                </button>
+            </div>
+        </div>
+        <div class="field checkbox-field">
+            <label class="checkbox-label" for="{{ form.remember_me.id_for_label }}">
+                {{ form.remember_me }}
+                <span>{{ form.remember_me.label }}</span>
+            </label>
+        </div>
+        <button type="submit" class="btn btn-primary auth-submit">{{ ui.login }}</button>
+    </form>
+
+    <div class="account-links">
+        <a href="{% url 'register' %}">{{ ui.register }}</a>
+        <a href="{% url 'password_reset' %}">{{ ui.forgot_password }}</a>
+        <a href="{% url 'resend_verification' %}">{{ ui.resend_verification_login }} {{ ui.send_confirmation }}</a>
+    </div>
+</section>
+{% endblock %}

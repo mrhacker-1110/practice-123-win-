@@ -1,0 +1,133 @@
+{% extends 'warehouse/base.html' %}
+
+{% block title %}{{ ui.dashboard }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="eyebrow">{{ ui.welcome }}</p>
+        <h1>{{ ui.dashboard }}</h1>
+    </div>
+    <div class="header-actions">
+        <a class="btn btn-secondary" href="{% url 'purchase_create' %}">{{ ui.receive_purchase }}</a>
+        <a class="btn btn-primary" href="{% url 'sale_create' %}">{{ ui.record_sale }}</a>
+    </div>
+</div>
+{% include 'warehouse/page_guide.html' %}
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <span>{{ ui.total_stock }}</span>
+        <strong>{{ total_items }}</strong>
+    </div>
+    <div class="stat-card">
+        <span>{{ ui.low_stock }}</span>
+        <strong>{{ low_stock }}</strong>
+    </div>
+    <div class="stat-card">
+        <span>{{ ui.inventory_value }}</span>
+        <strong>${{ total_value|floatformat:2 }}</strong>
+    </div>
+</div>
+
+<section class="panel chart-panel inventory-chart">
+    <h2>{{ ui.inventory_by_category }}</h2>
+    <div class="bar-chart">
+        {% for item in inventory_chart %}
+        <div class="bar-row">
+            <span class="bar-label" title="{{ item.label }}">{{ item.label }}</span>
+            <div class="bar-track">
+                <div class="bar-fill bar-{{ item.color }}" style="width: {{ item.width }}%"></div>
+            </div>
+            <strong>{{ item.quantity }}</strong>
+        </div>
+        {% empty %}
+        <p class="empty-state">{{ ui.empty_products }}</p>
+        {% endfor %}
+    </div>
+</section>
+
+<div class="panel-grid">
+    <section class="panel">
+        <div class="panel-heading">
+            <h2>{{ ui.recent_products }}</h2>
+            <a class="text-link" href="{% url 'products' %}">{{ ui.products }} &rarr;</a>
+        </div>
+        <div class="dashboard-data-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>{{ ui.product }}</th>
+                    <th>{{ ui.sku }}</th>
+                    <th>{{ ui.stock }}</th>
+                    <th>{{ ui.status }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr>
+                    <td>{{ product.name }}</td>
+                    <td>{{ product.sku }}</td>
+                    <td>{{ product.quantity }}</td>
+                    <td>
+                        <span class="badge {% if product.quantity <= product.minimum_stock %}danger{% else %}success{% endif %}">
+                            {% if product.quantity <= product.minimum_stock %}{{ ui.filter_low }}{% else %}{{ ui.in_stock }}{% endif %}
+                        </span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4">{{ ui.empty_products }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>{{ ui.latest_movements }}</h2>
+        <ul class="movement-list">
+            {% for movement in recent_movements %}
+            <li>
+                <span>{{ movement.product.name }}</span>
+                <strong>{% if current_language == 'ru' %}{% if movement.movement_type == 'in' %}Приход{% elif movement.movement_type == 'out' %}Расход{% else %}Корректировка{% endif %}{% else %}{{ movement.get_movement_type_display }}{% endif %} {{ movement.quantity }}</strong>
+            </li>
+            {% empty %}
+            <li>{{ ui.no_movements }}</li>
+            {% endfor %}
+        </ul>
+    </section>
+</div>
+
+<section class="panel">
+    <div class="panel-heading">
+        <h2>{{ ui.recent_sales }}</h2>
+        <a class="text-link" href="{% url 'sales_report' %}">{{ ui.sales }} &rarr;</a>
+    </div>
+    <div class="dashboard-data-table">
+    <table>
+        <thead>
+            <tr>
+                <th>{{ ui.product }}</th>
+                <th>{{ ui.customer }}</th>
+                <th>{{ ui.quantity }}</th>
+                <th>{{ ui.total }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sale in recent_sales %}
+            <tr>
+                <td>{{ sale.product.name }}</td>
+                <td>{{ sale.customer.name|default:"Walk-in" }}</td>
+                <td>{{ sale.quantity }}</td>
+                <td>${{ sale.total_price|floatformat:2 }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4">{{ ui.no_sales }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends 'warehouse/base.html' %}
+
+{% block title %}{{ ui.plans }}{% endblock %}
+
+{% block content %}
+<section class="pricing-header">
+    <p class="eyebrow">{{ ui.brand }}</p>
+    <h1>{{ ui.choose_plan }}</h1>
+    <p>{{ ui.terms_notice }}</p>
+</section>
+
+{% include 'warehouse/page_guide.html' %}
+{% if paypal_mode == 'sandbox' and not is_admin %}
+<p class="message info-message">{{ ui.sandbox_notice }}</p>
+{% elif billing_ready and not is_admin %}
+<p class="message">{{ ui.live_notice }}</p>
+{% endif %}
+
+{% if not billing_ready and not is_admin %}
+<p class="message info-message">{{ ui.payment_setup }}</p>
+{% endif %}
+
+{% if organization and subscription_status == 'pending' %}
+<p class="message info-message">{{ ui.subscription_pending }}</p>
+{% elif organization and subscription_status == 'active' %}
+<p class="message">{{ ui.subscription_active }}</p>
+{% elif organization and subscription_status == 'cancelled' %}
+<p class="message info-message">{{ ui.subscription_cancelled }}</p>
+{% elif organization and subscription_status == 'suspended' %}
+<p class="message error-message">{{ ui.subscription_suspended }}</p>
+{% endif %}
+
+<div class="pricing-grid">
+    {% for plan in plan_cards %}
+    <article class="panel pricing-card {% if plan.key == 'pro' %}featured-plan{% endif %}">
+        {% if plan.is_current %}<span class="plan-ribbon">{{ ui.current }}</span>{% endif %}
+        {% if is_admin and plan.key == 'super' %}<span class="plan-ribbon">{{ ui.admin_full_access }}</span>{% endif %}
+        <span class="plan-icon" aria-hidden="true">{{ plan.icon }}</span>
+        <p class="eyebrow">{{ plan.name }}</p>
+        <h2 class="plan-price">${{ plan.price }} <small>/ {{ ui.per_month }}</small></h2>
+        <p class="help-text">{{ ui.product_limit }}: {{ plan.limit }}</p>
+        <ul class="feature-list">
+            {% for feature in plan.features %}
+            <li>{{ feature }}</li>
+            {% endfor %}
+        </ul>
+
+        <a class="btn btn-secondary plan-details-link" href="{{ plan.detail_url }}">{{ ui.plan_details }}</a>
+
+        {% if plan.key == 'free' %}
+            {% if plan.is_current %}
+                <span class="btn btn-secondary btn-disabled">{{ ui.current }}</span>
+            {% elif not request.user.is_authenticated %}
+                <a class="btn btn-secondary" href="{% url 'register' %}">{{ ui.register }}</a>
+            {% endif %}
+        {% endif %}
+    </article>
+    {% endfor %}
+</div>
+
+{% if organization and is_owner and subscription_status == 'active' and organization.paypal_subscription_id %}
+<section class="panel cancel-plan-panel">
+    <h2>{{ ui.cancel_subscription }}</h2>
+    <p>{{ ui.cancel_confirm }}</p>
+    <form method="post" action="{% url 'cancel_paypal_subscription' %}">
+        {% csrf_token %}
+        <button class="btn btn-danger" type="submit">{{ ui.cancel_subscription }}</button>
+    </form>
+</section>
+{% endif %}
+{% endblock %}

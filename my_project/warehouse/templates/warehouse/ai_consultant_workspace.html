@@ -1,0 +1,87 @@
+{% extends 'warehouse/base.html' %}
+
+{% block title %}{% if current_language == 'ru' %}ИИ-консультант{% else %}AI consultant{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-header consultant-page-header">
+    <div>
+        <p class="eyebrow">{% if current_language == 'ru' %}Поддержка склада{% else %}Warehouse support{% endif %}</p>
+        <h1>{% if current_language == 'ru' %}ИИ-консультант{% else %}AI consultant{% endif %}</h1>
+    </div>
+    <a class="btn btn-secondary" href="{% url 'product_create' %}">{% if current_language == 'ru' %}Открыть умную камеру товара{% else %}Open smart product camera{% endif %}</a>
+</div>
+
+{% include 'warehouse/page_guide.html' %}
+<div class="consultant-layout">
+    <aside class="consultant-sidebar panel">
+        <div class="consultant-sidebar-header">
+            <h2>{% if current_language == 'ru' %}История чатов{% else %}Chat history{% endif %}</h2>
+            <form method="post" action="{% url 'new_ai_consultant_conversation' %}">
+                {% csrf_token %}
+                <button class="btn btn-primary btn-small" type="submit">{% if current_language == 'ru' %}+ Новый{% else %}+ New{% endif %}</button>
+            </form>
+        </div>
+        <label class="sr-only" for="chat-search">{% if current_language == 'ru' %}Поиск чатов{% else %}Search chats{% endif %}</label>
+        <input id="chat-search" class="chat-search" type="search" placeholder="{% if current_language == 'ru' %}Поиск по названию…{% else %}Search by title…{% endif %}">
+        <nav class="chat-history-list" id="chat-history-list" aria-label="{% if current_language == 'ru' %}История чатов{% else %}Chat history{% endif %}">
+            {% for item in conversations %}
+            <div class="chat-history-item {% if conversation.pk == item.pk %}is-active{% endif %}" data-chat-item data-title="{{ item.title|lower }}">
+                <a href="?conversation={{ item.pk }}" title="{{ item.title }}">{{ item.title }}<small>{{ item.updated_at|date:"d.m.Y H:i" }}</small></a>
+                <form method="post" action="{% url 'delete_ai_consultant_conversation' item.pk %}" class="chat-delete-form" data-confirm="{% if current_language == 'ru' %}Удалить этот чат и всю его историю?{% else %}Delete this chat and all its history?{% endif %}">
+                    {% csrf_token %}
+                    <button type="submit" class="chat-delete-button" aria-label="{% if current_language == 'ru' %}Удалить чат{% else %}Delete chat{% endif %}" title="{% if current_language == 'ru' %}Удалить чат{% else %}Delete chat{% endif %}">×</button>
+                </form>
+            </div>
+            {% empty %}
+            <p class="help-text chat-history-empty">{% if current_language == 'ru' %}История пока пустая. Создай новый чат.{% else %}No chats yet. Start a new one.{% endif %}</p>
+            {% endfor %}
+        </nav>
+        <p class="help-text chat-search-empty" id="chat-search-empty" hidden>{% if current_language == 'ru' %}Ничего не найдено.{% else %}No matching chats.{% endif %}</p>
+    </aside>
+
+    <section class="panel consultant-panel">
+        {% if not ai_configured %}
+        <div class="message info-message consultant-setup" role="status">
+            {% if current_language == 'ru' %}Сервер пока не видит GEMINI_API_KEY. Если ты уже задал ключ, перезапусти runserver в том же окне PowerShell.{% else %}The server cannot see GEMINI_API_KEY yet. If you already set it, restart runserver in the same PowerShell window.{% endif %}
+        </div>
+        {% endif %}
+        <p class="help-text consultant-privacy">{% if current_language == 'ru' %}История сохраняется в твоём аккаунте. Фото можно сделать прямо с телефона; вложения отправляются в Google Gemini и не хранятся приложением. Для повторного вопроса о файле прикрепи его снова.{% else %}Chat history is saved to your account. Take photos from your phone; attachments are sent to Google Gemini and are not stored by the app. Reattach a file to ask about it later.{% endif %}</p>
+
+        <div id="consultant-messages" class="consultant-messages" aria-live="polite" aria-label="{% if current_language == 'ru' %}Переписка с консультантом{% else %}Conversation with the consultant{% endif %}">
+            {% regroup chat_messages by created_at|date:"Y-m-d" as message_days %}
+            {% for day in message_days %}
+            <div class="consultant-day-separator" data-chat-date="{{ day.grouper }}"><span>{{ day.list.0.created_at|date:"j E Y" }}</span></div>
+            {% for message in day.list %}
+            <div class="consultant-message consultant-message-{{ message.role }}">
+                <span>{{ message.content|linebreaksbr }}</span>
+                {% if message.attachment_name %}<span class="consultant-attachment-chip">📎 {{ message.attachment_name }}</span>{% endif %}
+                <time class="consultant-message-time" datetime="{{ message.created_at|date:'c' }}">{{ message.created_at|date:"H:i" }}</time>
+            </div>
+            {% endfor %}
+            {% empty %}
+            <div class="consultant-welcome">{% if current_language == 'ru' %}Привет! Я помогу с учётом товаров, остатками, продажами и закупками. Чем помочь?{% else %}Hi! I can help with inventory, stock, sales, and purchasing. What do you need?{% endif %}</div>
+            {% endfor %}
+        </div>
+
+        <form id="consultant-form" class="consultant-form" data-endpoint="{% url 'ai_consultant_chat' %}" data-conversation-id="{{ conversation.pk|default:'' }}">
+            {% csrf_token %}
+            <input type="hidden" name="conversation_id" value="{{ conversation.pk|default:'' }}">
+            <label class="sr-only" for="consultant-input">{% if current_language == 'ru' %}Твой вопрос{% else %}Your question{% endif %}</label>
+            <textarea id="consultant-input" name="message" rows="3" maxlength="4000" placeholder="{% if current_language == 'ru' %}Напиши свой вопрос…{% else %}Type your question…{% endif %}" {% if not conversation %}disabled{% endif %}></textarea>
+            <div class="consultant-attach-row">
+                <label class="btn btn-secondary consultant-attach-button" for="consultant-photo">{% if current_language == 'ru' %}📷 Камера / фото{% else %}📷 Camera / photo{% endif %}</label>
+                <input id="consultant-photo" class="consultant-file-input" name="photo" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,image/avif" capture="environment" {% if not conversation %}disabled{% endif %}>
+                <label class="btn btn-secondary consultant-attach-button" for="consultant-attachment">{% if current_language == 'ru' %}📎 Файл{% else %}📎 File{% endif %}</label>
+                <input id="consultant-attachment" class="consultant-file-input" name="attachment" type="file" accept="*/*" {% if not conversation %}disabled{% endif %}>
+                <span id="consultant-attachment-name" class="help-text" aria-live="polite"></span>
+            </div>
+            <div class="consultant-form-footer">
+                <span class="help-text">{% if current_language == 'ru' %}Можно выбрать любой файл. ИИ читает PDF, документы .docx/.xlsx/.pptx, текст, фото, аудио и видео. До 14 МБ; пароли и платёжные данные не отправляй.{% else %}You can choose any file. AI can read PDF, .docx/.xlsx/.pptx, text, photos, audio, and video. Up to 14 MB; do not send passwords or payment details.{% endif %}</span>
+                <button type="submit" class="btn btn-primary" id="consultant-send" {% if not conversation %}disabled{% endif %}>{% if current_language == 'ru' %}Отправить{% else %}Send{% endif %}</button>
+            </div>
+            {% if not conversation %}<p class="help-text">{% if current_language == 'ru' %}Нажми «Новый», чтобы начать переписку.{% else %}Click “New” to start a conversation.{% endif %}</p>{% endif %}
+            <p id="consultant-status" class="help-text" role="status" aria-live="polite"></p>
+        </form>
+    </section>
+</div>
+{% endblock %}

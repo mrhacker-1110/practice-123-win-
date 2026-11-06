@@ -1,0 +1,94 @@
+<details class="page-guide">
+    <summary>{% if current_language == 'ru' %}Для чего нужен этот раздел и как им пользоваться{% else %}What this section is for and how to use it{% endif %}</summary>
+    <div class="page-guide-content">
+        {% if request.resolver_match.url_name == 'dashboard' %}
+            {% if current_language == 'ru' %}
+            <p><strong>Главная</strong> — краткая сводка: сколько товара есть, что заканчивается и какие операции были недавно.</p>
+            <ol><li>Посмотри карточку «Мало на складе».</li><li>Открой товар, чтобы проверить его остаток.</li><li>Запиши поступление во вкладке «Поставки», а продажу — во вкладке «Продажи».</li></ol>
+            {% else %}
+            <p><strong>Home</strong> is a quick warehouse summary: stock on hand, items running low, and recent activity.</p>
+            <ol><li>Check “Low stock”.</li><li>Open a product to review its quantity.</li><li>Record deliveries in “Purchases” and sales in “Sales”.</li></ol>
+            {% endif %}
+        {% elif request.resolver_match.url_name == 'products' or request.resolver_match.url_name == 'product_create' or request.resolver_match.url_name == 'product_update' or request.resolver_match.url_name == 'product_import' or request.resolver_match.url_name == 'product_delete' %}
+            {% if current_language == 'ru' %}
+            <p><strong>Товары</strong> — список всего, чем вы торгуете. Артикул — ваш уникальный код товара, а «минимальный остаток» — порог, ниже которого запас считается низким.</p>
+            <ol><li>Добавь товар и укажи название, артикул, цену и минимальный остаток.</li><li>Проверь предложенные камерой данные перед сохранением.</li><li>Поступления и продажи сами меняют остаток; для пересчёта используй «Движения».</li></ol>
+            {% else %}
+            <p><strong>Products</strong> is your catalog. The product code is a unique label; “minimum stock” is the level at which the app marks an item as low.</p>
+            <ol><li>Add a product with a name, SKU, price, and minimum stock.</li><li>Review any camera suggestions before saving.</li><li>Purchases and sales update stock; use “Movements” for a stock count correction.</li></ol>
+            {% endif %}
+        {% elif request.resolver_match.url_name == 'ai_consultant' %}
+            {% if current_language == 'ru' %}
+            <p><strong>ИИ-консультант</strong> отвечает на вопросы о работе приложения и помогает обдумать складские задачи. Он не видит товары и цифры из вашей базы автоматически.</p>
+            <ol><li>Создай чат и задай вопрос.</li><li>При необходимости прикрепи фото или файл.</li><li>Проверь совет по своим данным; переписку можно найти и удалить в истории слева.</li></ol>
+            {% else %}
+            <p><strong>AI consultant</strong> answers questions about the app and helps think through warehouse tasks. It cannot automatically see products or figures in your database.</p>
+            <ol><li>Start a chat and ask a question.</li><li>Attach a photo or file if useful.</li><li>Check advice against your own records; find or delete chats in the history.</li></ol>
+            {% endif %}
+        {% elif request.resolver_match.url_name == 'inventory_advisor' %}
+            {% if current_language == 'ru' %}
+            <p><strong>Помощник по запасам</strong> сравнивает текущий остаток с продажами за последние 30 дней и примерно рассчитывает запас на 14 дней. Это подсказка, а не заказ поставщику.</p>
+            <ol><li>Проверь, правильно ли внесены продажи и остатки.</li><li>Посмотри товары и предложенное количество.</li><li>Учти срок доставки и сезон, затем оформи нужное поступление во вкладке «Поставки».</li></ol>
+            {% else %}
+            <p><strong>Stock assistant</strong> compares current stock with sales from the last 30 days and estimates a 14-day supply. It is a suggestion, not an order.</p>
+            <ol><li>Make sure sales and stock counts are up to date.</li><li>Review the products and suggested quantities.</li><li>Consider delivery time and season, then record the delivery in “Purchases”.</li></ol>
+            {% endif %}
+        {% elif request.resolver_match.url_name == 'stock_movements' %}
+            {% if current_language == 'ru' %}
+            <p><strong>Движения</strong> — журнал изменений количества товара: поступило, списано или пересчитано.</p>
+            <ol><li>Выбери товар и вид изменения.</li><li>Для «Пересчёта» укажи фактическое количество на полке, а не разницу.</li><li>Сохрани запись и проверь новый остаток в «Товарах».</li></ol>
+            {% else %}
+            <p><strong>Movements</strong> is the log of stock changes: received, removed, or counted.</p>
+            <ol><li>Choose a product and movement type.</li><li>For “Adjustment”, enter the actual counted quantity, not the difference.</li><li>Save and check the new stock in “Products”.</li></ol>
+            {% endif %}
+        {% elif request.resolver_match.url_name == 'purchases' or request.resolver_match.url_name == 'purchase_create' %}
+            {% if current_language == 'ru' %}
+            <p><strong>Поставки</strong> — учёт товара, который уже приехал от поставщика. После сохранения количество сразу прибавится к остатку.</p>
+            <ol><li>Выбери товар и поставщика.</li><li>Укажи принятое количество и цену закупки.</li><li>Сохрани только после фактического получения товара.</li></ol>
+            {% else %}
+            <p><strong>Purchases</strong> records goods that have arrived from a supplier. Saving a purchase immediately adds its quantity to stock.</p>
+            <ol><li>Choose the product and supplier.</li><li>Enter the quantity received and purchase cost.</li><li>Save after the goods have actually arrived.</li></ol>
+            {% endif %}
+        {% elif request.resolver_match.url_name == 'suppliers' %}
+            {% if current_language == 'ru' %}
+            <p><strong>Поставщики</strong> — контакты компаний и людей, у которых вы закупаете товары.</p>
+            <ol><li>Добавь название и удобный способ связи.</li><li>Выбери поставщика при записи поступления.</li><li>Сверяй контакт с документами поставки.</li></ol>
+            {% else %}
+            <p><strong>Suppliers</strong> stores contact details for the people and companies you buy from.</p>
+            <ol><li>Add a name and contact method.</li><li>Select the supplier when recording a delivery.</li><li>Match the contact to your purchase documents.</li></ol>
+            {% endif %}
+        {% elif request.resolver_match.url_name == 'customers' %}
+            {% if current_language == 'ru' %}
+            <p><strong>Покупатели</strong> — список клиентов, которых можно указать при оформлении продажи.</p>
+            <ol><li>Добавь имя или название компании.</li><li>При продаже выбери клиента, если нужно его указать.</li><li>Контактные данные используй для связи по заказу.</li></ol>
+            {% else %}
+            <p><strong>Customers</strong> stores clients you can select when recording a sale.</p>
+            <ol><li>Add a name or company.</li><li>Select the customer when recording a sale if needed.</li><li>Use the contact details to follow up about the order.</li></ol>
+            {% endif %}
+        {% elif request.resolver_match.url_name == 'sales_report' or request.resolver_match.url_name == 'sale_create' %}
+            {% if current_language == 'ru' %}
+            <p><strong>Продажи</strong> — регистрация проданных товаров и сводка выручки. При сохранении продажи остаток уменьшится; сумма считается по цене товара в карточке.</p>
+            <ol><li>Для новой продажи нажми «Записать продажу».</li><li>Выбери товар, количество и при необходимости покупателя.</li><li>Для отчёта выбери период.</li></ol>
+            {% else %}
+            <p><strong>Sales</strong> records sold items and summarizes revenue. Saving a sale reduces stock; the total uses the price in the product record.</p>
+            <ol><li>Choose “Record sale” to add a sale.</li><li>Select the product, quantity, and customer if needed.</li><li>Choose a period for the report.</li></ol>
+            {% endif %}
+        {% elif request.resolver_match.url_name == 'profile' %}
+            {% if current_language == 'ru' %}
+            <p><strong>Профиль</strong> — ваши контактные данные и сведения об аккаунте.</p>
+            <ol><li>Проверь имя и телефон.</li><li>Измени нужные поля.</li><li>Нажми «Сохранить» внизу формы.</li></ol>
+            {% else %}
+            <p><strong>Profile</strong> contains your contact details and account information.</p>
+            <ol><li>Review your name and phone.</li><li>Update the fields you need.</li><li>Click “Save” at the bottom of the form.</li></ol>
+            {% endif %}
+        {% elif request.resolver_match.url_name == 'plans' or request.resolver_match.url_name == 'plan_detail' %}
+            {% if current_language == 'ru' %}
+            <p><strong>Тарифы</strong> показывают, какие возможности и ограничения доступны в каждом варианте.</p>
+            <ol><li>Сравни лимит товаров и нужные функции.</li><li>Открой «Подробнее», чтобы прочитать условия.</li><li>Выбирай платный вариант только если он подходит по цене и возможностям.</li></ol>
+            {% else %}
+            <p><strong>Plans</strong> show the features and limits included in each option.</p>
+            <ol><li>Compare product limits and the features you need.</li><li>Open “Details” to read the plan information.</li><li>Choose a paid option only if its price and features fit your needs.</li></ol>
+            {% endif %}
+        {% endif %}
+    </div>
+</details>

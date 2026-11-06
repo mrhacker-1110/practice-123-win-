@@ -1,0 +1,123 @@
+{% extends 'warehouse/base.html' %}
+
+{% block title %}{{ ui.sales_report }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="eyebrow">{{ ui.finance }}</p>
+        <h1>{{ ui.sales_report }}</h1>
+    </div>
+    <a class="btn btn-primary" href="{% url 'sale_create' %}">{{ ui.record_sale }}</a>
+</div>
+
+{% include 'warehouse/page_guide.html' %}
+<section class="panel report-filter-panel">
+    <form method="get" class="report-filter-form">
+        <label for="sales-period-select">{{ ui.report_period }}</label>
+        <select id="sales-period-select" name="period">
+            <option value="plan" {% if selected_period == 'plan' %}selected{% endif %}>{{ ui.period_plan }}</option>
+            <option value="day" {% if selected_period == 'day' %}selected{% endif %}>{{ ui.period_day }}</option>
+            <option value="week" {% if selected_period == 'week' %}selected{% endif %}>{{ ui.period_week }}</option>
+            <option value="month" {% if selected_period == 'month' %}selected{% endif %}>{{ ui.period_month }}</option>
+            <option value="year" {% if selected_period == 'year' %}selected{% endif %}>{{ ui.period_year }}</option>
+            <option value="custom" {% if selected_period == 'custom' %}selected{% endif %}>{{ ui.period_custom }}</option>
+        </select>
+        <div id="custom-date-fields" class="custom-date-fields">
+            <label for="report-start-date">{{ ui.date_from }}</label>
+            <input id="report-start-date" type="date" name="start_date" value="{{ custom_start_date }}" min="{{ report_history_start|date:'Y-m-d' }}" max="{{ report_max_date|date:'Y-m-d' }}">
+            <label for="report-end-date">{{ ui.date_to }}</label>
+            <input id="report-end-date" type="date" name="end_date" value="{{ custom_end_date }}" min="{{ report_history_start|date:'Y-m-d' }}" max="{{ report_max_date|date:'Y-m-d' }}">
+        </div>
+        <button class="btn btn-primary" type="submit">{{ ui.apply_filter }}</button>
+    </form>
+    <p class="help-text">{{ ui.report_range_note }}</p>
+</section>
+
+{% if range_error %}
+<p class="message error-message" role="alert">{{ range_error }}</p>
+{% endif %}
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <span>{{ ui.total_revenue }}</span>
+        <strong>${{ total_revenue|floatformat:2 }}</strong>
+    </div>
+</div>
+
+<section class="panel chart-panel">
+    <h2>{{ ui.report_period_chart }}</h2>
+    {% if start_date and end_date %}
+    <p class="help-text">{{ start_date|date:"d M Y" }} — {{ end_date|date:"d M Y" }}</p>
+    {% endif %}
+    {% if not can_view_extended_reports %}
+    <p class="upgrade-prompt">
+        {{ ui.plan_restricted }}
+        <a href="{% url 'plan_detail' 'pro' %}">Pro</a>.
+        <a class="btn btn-small btn-secondary" href="{% url 'plan_detail' 'pro' %}">{{ ui.upgrade_to_plan }}</a>
+    </p>
+    {% endif %}
+    {% if can_export_sales_report %}
+    <div class="report-export-actions">
+        <form method="get" action="{% url 'export_sales_report_excel' %}">
+            <input type="hidden" name="period" value="{{ selected_period }}">
+            {% if selected_period == 'custom' %}
+            <input type="hidden" name="start_date" value="{{ custom_start_date }}">
+            <input type="hidden" name="end_date" value="{{ custom_end_date }}">
+            {% endif %}
+            <button class="btn btn-secondary" type="submit">{{ ui.export_excel }}</button>
+        </form>
+        <form method="get" action="{% url 'export_sales_report_pdf' %}">
+            <input type="hidden" name="period" value="{{ selected_period }}">
+            {% if selected_period == 'custom' %}
+            <input type="hidden" name="start_date" value="{{ custom_start_date }}">
+            <input type="hidden" name="end_date" value="{{ custom_end_date }}">
+            {% endif %}
+            <button class="btn btn-secondary" type="submit">{{ ui.export_pdf }}</button>
+        </form>
+        <span class="help-text">{{ ui.pdf_report_limit }}</span>
+    </div>
+    {% endif %}
+    <div class="bar-chart">
+        {% for item in chart_data %}
+        <div class="bar-row">
+            <span class="bar-label">{{ item.label }}</span>
+            <div class="bar-track"><div class="bar-fill" style="width: {{ item.width }}%"></div></div>
+            <strong>${{ item.revenue|floatformat:2 }}</strong>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="panel">
+    <table>
+        <thead>
+            <tr>
+                <th>{{ ui.product }}</th>
+                <th>{{ ui.customer }}</th>
+                <th>{{ ui.quantity }}</th>
+                <th>{{ ui.price }}</th>
+                <th>{{ ui.total }}</th>
+                <th>{{ ui.operator }}</th>
+                <th>{{ ui.date }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sale in sales %}
+            <tr>
+                <td>{{ sale.product.name }}</td>
+                <td>{{ sale.customer.name|default:"-" }}</td>
+                <td>{{ sale.quantity }}</td>
+                <td>${{ sale.unit_price|floatformat:2 }}</td>
+                <td>${{ sale.total_price|floatformat:2 }}</td>
+                <td>{{ sale.created_by.username|default:"-" }}</td>
+                <td>{{ sale.sold_at|date:"d M Y" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7">{{ ui.no_sales }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% include 'warehouse/pagination.html' with page_obj=sales %}
+{% endblock %}

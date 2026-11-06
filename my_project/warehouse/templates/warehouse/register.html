@@ -1,0 +1,85 @@
+{% extends 'warehouse/base.html' %}
+
+{% block title %}{{ ui.register }}{% endblock %}
+
+{% block content %}
+<section class="panel auth-card login-panel">
+    <div class="auth-header">
+        <p class="eyebrow">{{ ui.brand }}</p>
+        <h1>{{ ui.register_title }}</h1>
+        <p class="auth-subtitle">
+            {% if current_language == 'ru' %}Создайте личный рабочий кабинет и начните управление складом уже сегодня.{% else %}Create your workspace and start managing inventory in a structured, professional setup.{% endif %}
+        </p>
+    </div>
+
+    {% if form.errors %}
+    <div class="message error-message form-error-summary" role="alert" tabindex="-1">
+        <p>{{ ui.registration_error_summary }}</p>
+        {{ form.non_field_errors }}
+    </div>
+    {% endif %}
+
+    <form method="post" data-live-validation data-valid-label="{{ ui.field_valid }}" data-invalid-label="{{ ui.field_invalid }}" data-submitting-label="{{ ui.creating_account }}">
+        {% csrf_token %}
+        <div class="auth-grid">
+            {% for field in form %}
+            {% if field.name != 'accept_terms' %}
+            <div class="field {% if forloop.counter|divisibleby:2 %}field-right{% endif %} {% if field.name == 'company_name' or field.name == 'password1' or field.name == 'password2' %}field-full{% endif %}">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {% if field.name == 'password1' or field.name == 'password2' %}
+                    <div class="password-input-wrap">
+                        {{ field }}
+                        <button type="button" class="password-toggle-btn" data-password-target="{{ field.id_for_label }}" aria-label="{% if current_language == 'ru' %}Показать пароль{% else %}Show password{% endif %}">
+                            {% if current_language == 'ru' %}Показать{% else %}Show{% endif %}
+                        </button>
+                    </div>
+                {% else %}
+                    {{ field }}
+                {% endif %}
+                {% if field.name == 'password1' %}
+                    <div class="password-rules" id="password-rules">
+                        <div class="password-rules-header">
+                            <strong>{% if current_language == 'ru' %}Требования к паролю{% else %}Password requirements{% endif %}</strong>
+                            <button type="button" class="password-rules-toggle" aria-expanded="true">
+                                {% if current_language == 'ru' %}Скрыть{% else %}Hide{% endif %}
+                            </button>
+                        </div>
+                        <ul class="password-rules-list">
+                            <li data-rule="min_length">{% if current_language == 'ru' %}Минимум 8 символов{% else %}At least 8 characters{% endif %}</li>
+                            <li data-rule="has_letter">{% if current_language == 'ru' %}Есть буква{% else %}Contains a letter{% endif %}</li>
+                            <li data-rule="has_digit">{% if current_language == 'ru' %}Есть цифра{% else %}Contains a digit{% endif %}</li>
+                            <li data-rule="not_only_digits">{% if current_language == 'ru' %}Не только цифры{% else %}Not only digits{% endif %}</li>
+                        </ul>
+                    </div>
+                    <div class="password-meter" aria-live="polite">
+                        <span class="password-meter-bar" id="password-strength-bar"></span>
+                    </div>
+                    <small class="password-meter-label" id="password-strength-label">{% if current_language == 'ru' %}Надёжность пароля{% else %}Password strength{% endif %}: {% if current_language == 'ru' %}не оценено{% else %}not checked{% endif %}</small>
+                {% endif %}
+                {% if field.help_text %}<small class="help-text">{{ field.help_text|safe }}</small>{% endif %}
+                {% if field.errors %}<div class="error" role="alert" id="{{ field.id_for_label }}-errors">{{ field.errors }}</div>{% endif %}
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+
+        <div class="field consent-field field-full">
+            <label class="consent-label" for="{{ form.accept_terms.id_for_label }}">
+                {{ form.accept_terms }}
+                <span>{{ ui.terms_consent }}
+                    <a href="{% url 'legal_information' 'terms' %}">{{ ui.terms_link }}</a>
+                    <span aria-hidden="true"> · </span>
+                    <a href="{% url 'legal_information' 'privacy' %}">{{ ui.privacy_link }}</a>
+                </span>
+            </label>
+            {% if form.accept_terms.errors %}<div class="error" role="alert" id="{{ form.accept_terms.id_for_label }}-errors">{{ form.accept_terms.errors }}</div>{% endif %}
+        </div>
+        <button type="submit" class="btn btn-primary auth-submit registration-submit">{{ ui.register }}</button>
+    </form>
+
+    <div class="account-links">
+        <a href="{% url 'login' %}">{{ ui.already_have_account }}</a>
+        <a href="{% url 'plans' %}">{{ ui.plans }}</a>
+    </div>
+</section>
+{% endblock %}

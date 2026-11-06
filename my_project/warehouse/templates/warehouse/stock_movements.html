@@ -1,0 +1,64 @@
+{% extends 'warehouse/base.html' %}
+
+{% block title %}{{ ui.movements }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="eyebrow">{{ ui.operations }}</p>
+        <h1>{{ ui.movements }}</h1>
+    </div>
+</div>
+
+{% include 'warehouse/page_guide.html' %}
+<section class="panel form-panel">
+    <h2>{{ ui.register_movement }}</h2>
+    <p class="help-text">{% if current_language == 'ru' %}При корректировке укажи новый фактический остаток, а не разницу.{% else %}For an adjustment, enter the new counted stock, not the difference.{% endif %}</p>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-grid">
+            {% for field in form %}
+            <div class="field">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}<div class="error">{{ field.errors }}</div>{% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        <div class="form-actions">
+            <button class="btn btn-primary" type="submit">{{ ui.save_movement }}</button>
+        </div>
+    </form>
+</section>
+
+<section class="panel">
+    <h2>{{ ui.recent_actions }}</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>{{ ui.product }}</th>
+                <th>{{ ui.type }}</th>
+                <th>{{ ui.quantity }}</th>
+                <th>{{ ui.notes }}</th>
+                <th>{{ ui.operator }}</th>
+                <th>{{ ui.date }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for movement in movements %}
+            <tr>
+                <td>{{ movement.product.name }}</td>
+                <td>{% if current_language == 'ru' %}{% if movement.movement_type == 'in' %}Приход{% elif movement.movement_type == 'out' %}Расход{% else %}Корректировка{% endif %}{% else %}{{ movement.get_movement_type_display }}{% endif %}</td>
+                <td>{{ movement.quantity }}</td>
+                <td>{{ movement.notes|default:"-" }}</td>
+                <td>{{ movement.created_by.username|default:"-" }}</td>
+                <td>{{ movement.created_at|date:"d M Y" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6">{{ ui.no_movements }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% include 'warehouse/pagination.html' with page_obj=movements %}
+{% endblock %}

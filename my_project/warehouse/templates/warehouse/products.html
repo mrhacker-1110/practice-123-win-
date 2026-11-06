@@ -1,0 +1,77 @@
+{% extends 'warehouse/base.html' %}
+
+{% block title %}{{ ui.products }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="eyebrow">{{ ui.welcome }}</p>
+        <h1>{{ ui.products }}</h1>
+    </div>
+    <div class="header-actions">
+        {% if can_import_products %}
+        <a class="btn btn-secondary" href="{% url 'product_import' %}">{{ ui.product_import }}</a>
+        {% else %}
+        <a class="btn btn-secondary" href="{% url 'plan_detail' 'pro' %}">{{ ui.product_import }} · Pro</a>
+        {% endif %}
+        {% if can_export_products %}
+        <a class="btn btn-secondary" href="{% url 'export_products_csv' %}">{{ ui.export_csv }}</a>
+        {% else %}
+        <a class="btn btn-secondary" href="{% url 'plan_detail' 'pro' %}">{{ ui.export_csv }} · {{ ui.upgrade_to_plan }} Pro</a>
+        {% endif %}
+        <a class="btn btn-primary" href="{% url 'product_create' %}">{{ ui.add_product }}</a>
+    </div>
+</div>
+
+{% include 'warehouse/page_guide.html' %}
+<form class="search-box" method="get">
+    <input type="text" name="q" value="{{ query }}" placeholder="{{ ui.search_placeholder }}">
+    <select name="category" aria-label="{{ ui.category }}">
+        <option value="">{{ ui.all_categories }}</option>
+        {% for category in categories %}
+        <option value="{{ category.pk }}" {% if category_id == category.pk|stringformat:"s" %}selected{% endif %}>{{ category.name }}</option>
+        {% endfor %}
+    </select>
+    <select name="status" aria-label="{{ ui.status }}">
+        <option value="">{{ ui.all_stock }}</option>
+        <option value="in_stock" {% if status == 'in_stock' %}selected{% endif %}>{{ ui.in_stock }}</option>
+        <option value="low" {% if status == 'low' %}selected{% endif %}>{{ ui.filter_low }}</option>
+    </select>
+    <button type="submit" class="btn btn-secondary">{{ ui.search }}</button>
+</form>
+
+<section class="panel">
+    <table>
+        <thead>
+            <tr>
+                <th>{{ ui.name }}</th>
+                <th>{{ ui.sku }}</th>
+                <th>{{ ui.category }}</th>
+                <th>{{ ui.stock }}</th>
+                <th>{{ ui.price }}</th>
+                <th>{{ ui.actions }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td>{{ product.name }}</td>
+                <td>{{ product.sku }}</td>
+                <td>{{ product.category|default:"-" }}</td>
+                <td>{{ product.quantity }}</td>
+                <td>${{ product.unit_price|floatformat:2 }}</td>
+                <td class="actions-cell">
+                    <a class="btn btn-small" href="{% url 'product_update' product.pk %}">{{ ui.edit }}</a>
+                    <a class="btn btn-small btn-danger" href="{% url 'product_delete' product.pk %}">{{ ui.delete }}</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6">{{ ui.empty_products }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% include 'warehouse/pagination.html' with page_obj=products %}
+{% endblock %}

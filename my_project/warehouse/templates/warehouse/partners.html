@@ -1,0 +1,57 @@
+{% extends 'warehouse/base.html' %}
+
+{% block title %}{{ entity }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="eyebrow">{{ ui.welcome }}</p>
+        <h1>{{ entity }}</h1>
+    </div>
+</div>
+
+{% include 'warehouse/page_guide.html' %}
+<section class="panel form-panel">
+    <h2>{{ ui.add }} {{ add_label }}</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-grid">
+            {% for field in form %}
+            <div class="field">
+                <label for="{{ field.id_for_label }}">{{ field.label|default:field.name }}</label>
+                {{ field }}
+                {% if field.errors %}<div class="error">{{ field.errors }}</div>{% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        <div class="form-actions">
+            <button class="btn btn-primary" type="submit">{{ ui.save }}</button>
+        </div>
+    </form>
+</section>
+
+<section class="panel">
+    <table>
+        <thead>
+            <tr>
+                <th>{{ ui.name }}</th>
+                <th>{{ ui.company }}</th>
+                <th>{{ ui.phone }}</th>
+                <th>{{ ui.email }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.name }}</td>
+                <td>{{ item.company|default:"-" }}</td>
+                <td>{{ item.phone|default:"-" }}</td>
+                <td>{{ item.email|default:"-" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4">{{ empty_label }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}
