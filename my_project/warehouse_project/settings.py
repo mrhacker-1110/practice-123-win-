@@ -60,12 +60,28 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "warehouse_project.wsgi.application"
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+import sys
+
+# Если проект запущен на Vercel (в файловой системе Vercel /var/task)
+if 'vercel' in os.environ.get('SERVER_SOFTWARE', '').lower() or not os.access(BASE_DIR, os.W_OK):
+    import shutil
+    tmp_db = '/tmp/db.sqlite3'
+    if not os.path.exists(tmp_db) and os.path.exists(BASE_DIR / 'db.sqlite3'):
+        shutil.copyfile(BASE_DIR / 'db.sqlite3', tmp_db)
+    
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': tmp_db,
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
