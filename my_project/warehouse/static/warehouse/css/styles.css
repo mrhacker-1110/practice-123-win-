@@ -1131,3 +1131,34 @@ textarea { min-height: 110px; }
 .page-guide-content p { margin: 0 0 8px; }
 .page-guide-content ol { margin: 0; padding-left: 22px; }
 .page-guide-content li + li { margin-top: 4px; }
+
+
+/* Phone layout: keep navigation, forms, and actions usable without page-level overflow. */
+@media (max-width: 800px) {
+  .topbar { grid-template-columns: minmax(0, 1fr) auto; }
+  .nav { flex-direction: column; align-items: stretch; gap: 4px; max-height: min(65vh, 520px); overflow-y: auto; }
+  .nav a { min-height: 44px; display: flex; align-items: center; padding: 10px 12px; }
+  .topbar-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; }
+  .topbar-actions > form:last-child { grid-column: 1 / -1; }
+  .topbar-actions > form:last-child .btn { width: 100%; min-height: 44px; }
+  .page-header { min-width: 0; }
+  .page-header h1 { overflow-wrap: anywhere; }
+  .panel, .form-panel, .stat-card { min-width: 0; }
+  .table-wrap, .dashboard-data-table { width: 100%; overscroll-behavior-inline: contain; -webkit-overflow-scrolling: touch; }
+  .table-wrap table, .dashboard-data-table table, .panel > table { min-width: 640px; }
+  input, select, textarea { max-width: 100%; }
+  .form-actions .btn, .header-actions .btn { width: 100%; }
+  .site-footer { padding-inline: 14px; flex-wrap: wrap; gap: 12px 20px; }
+}
+@media (max-width: 480px) {
+  .topbar { padding: 12px; gap: 10px; }
+  .brand { font-size: 1.15rem; white-space: normal; line-height: 1.2; }
+  .container { width: 100%; padding-inline: 12px; }
+  .topbar-actions { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .topbar-actions .language-form, .topbar-actions .theme-select { min-width: 0; }
+  .header-actions { grid-template-columns: 1fr; }
+  .panel-heading { min-width: 0; }
+  .form-actions { grid-template-columns: 1fr; }
+  .photo-assistant { padding: 15px; }
+  .actions-cell { min-width: 130px; }
+}
