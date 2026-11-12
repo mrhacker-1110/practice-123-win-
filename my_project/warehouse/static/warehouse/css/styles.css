@@ -1162,3 +1162,37 @@ textarea { min-height: 110px; }
   .photo-assistant { padding: 15px; }
   .actions-cell { min-width: 130px; }
 }
+
+.barcode-scan-button { margin-top: 8px; }
+.barcode-dialog { width: min(94vw, 520px); padding: 20px; border: 1px solid var(--border); border-radius: 16px; color: var(--text); background: var(--card); }
+.barcode-dialog::backdrop { background: rgba(15, 23, 42, .72); }
+.barcode-dialog video { display: block; width: 100%; max-height: 58vh; object-fit: cover; border-radius: 12px; background: #0b1220; }
+.barcode-dialog .btn { width: 100%; }
+
+.backup-panel { display: grid; gap: 14px; }
+.backup-panel h2, .backup-panel p { margin: 0; }
+.backup-restore-form { display: grid; gap: 12px; padding-top: 16px; border-top: 1px solid var(--border); }
+.backup-confirm { display: flex; align-items: flex-start; gap: 10px; }
+.backup-confirm input { min-width: 20px; width: 20px; min-height: 20px; height: 20px; margin-top: 4px; }
+
+/* Calm motion and clearer focus states across the interface. */
+@keyframes page-arrive {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes notice-arrive {
+  from { opacity: 0; transform: translateY(5px) scale(.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.container { animation: page-arrive .38s cubic-bezier(.2,.7,.25,1) both; }
+.message { animation: notice-arrive .28s ease-out both; }
+.panel, .stat-card { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+.stat-card { border-color: color-mix(in srgb, var(--border), var(--primary) 12%); }
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .stat-card:hover { transform: translateY(-2px); box-shadow: 0 14px 34px rgba(24, 50, 37, .09); }
+}
+:focus-visible { outline: 3px solid color-mix(in srgb, var(--primary), transparent 55%); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) {
+  .container, .message { animation: none !important; }
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+}

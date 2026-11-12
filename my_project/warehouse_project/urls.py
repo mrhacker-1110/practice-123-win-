@@ -3,8 +3,10 @@ from django.contrib.auth import views as auth_views
 from django.contrib import admin
 from django.urls import include, path, reverse_lazy
 from warehouse import views
+from warehouse.pwa import service_worker
 
 urlpatterns = [
+    path("sw.js", service_worker, name="service_worker"),
     path("admin/", admin.site.urls),
     path(
         "accounts/login/",

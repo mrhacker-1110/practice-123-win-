@@ -18,7 +18,7 @@ from xml.etree import ElementTree
 
 from django.conf import settings
 from django.core import signing
-from django.core.exceptions import ImproperlyConfigured
+from django.core.exceptions import ImproperlyConfigured, ValidationError
 from django.core.mail import send_mail
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -49,6 +49,7 @@ from .forms import (
     TERMS_VERSION,
     WarehouseAuthenticationForm,
 )
+from .backup import build_backup, restore_backup
 from .gemini import GeminiError, answer_consultant, suggest_product_fields
 from .models import (
     AIConversation,
@@ -485,6 +486,56 @@ def verify_email(request, uidb64, token):
             ),
         },
     )
+
+
+BACKUP_MAX_BYTES = 10 * 1024 * 1024
+
+
+def organization_owner_required(view):
+    @wraps(view)
+    @login_required
+    def wrapped(request, *args, **kwargs):
+        profile = UserProfile.objects.select_related("organization").filter(user=request.user).first()
+        if not profile:
+            return HttpResponseForbidden("No warehouse workspace is assigned to this account.")
+        if profile.organization.owner_id != request.user.pk and not request.user.is_superuser:
+            return HttpResponseForbidden("Only the workspace owner can manage backups.")
+        request.organization = profile.organization
+        return view(request, *args, **kwargs)
+    return wrapped
+
+
+@organization_owner_required
+def export_warehouse_backup(request):
+    response = HttpResponse(build_backup(request.organization), content_type="application/json; charset=utf-8")
+    response["Content-Disposition"] = f'attachment; filename="warehouse-backup-{timezone.localdate().isoformat()}.json"'
+    response["Cache-Control"] = "private, no-store"
+    return response
+
+
+@organization_owner_required
+@require_POST
+def restore_warehouse_backup(request):
+    russian = _is_russian(request)
+    uploaded = request.FILES.get("backup_file")
+    if request.POST.get("confirm_restore") != "yes":
+        messages.error(request, "Подтвердите замену текущих данных." if russian else "Confirm replacing the current data.")
+        return redirect("profile")
+    if not uploaded or uploaded.size > BACKUP_MAX_BYTES:
+        messages.error(request, "Выберите JSON-файл размером до 10 МБ." if russian else "Choose a JSON file up to 10 MB.")
+        return redirect("profile")
+    try:
+        raw = uploaded.read(BACKUP_MAX_BYTES + 1)
+        if len(raw) > BACKUP_MAX_BYTES:
+            raise ValidationError("Backup file is too large.")
+        payload = json.loads(raw.decode("utf-8-sig"))
+        counts = restore_backup(request.organization, payload)
+    except (UnicodeDecodeError, json.JSONDecodeError, ValidationError, IntegrityError, ValueError, TypeError, KeyError) as exc:
+        logger.warning("Warehouse backup restore rejected for organization %s: %s", request.organization.pk, exc)
+        messages.error(request, "Копия повреждена или не подходит. Текущие данные сохранены." if russian else "The backup is invalid or incompatible. Current data was preserved.")
+        return redirect("profile")
+    messages.success(request, f"Восстановлено записей: {sum(counts.values())}." if russian else f"Restored {sum(counts.values())} records.")
+    return redirect("profile")
 
 
 @login_required

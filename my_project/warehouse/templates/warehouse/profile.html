@@ -13,26 +13,13 @@
 
 {% include 'warehouse/page_guide.html' %}
 <section class="panel profile-summary">
-    <div>
-        <span>{{ ui.username }}</span>
-        <strong>{{ request.user.username }}</strong>
-    </div>
-    <div>
-        <span>{{ ui.email }}</span>
-        <strong>{{ request.user.email }}</strong>
-    </div>
+    <div><span>{{ ui.username }}</span><strong>{{ request.user.username }}</strong></div>
+    <div><span>{{ ui.email }}</span><strong>{{ request.user.email }}</strong></div>
     <div>
         <span>{{ ui.email_verified }}</span>
-        <strong>
-            <span class="badge {% if profile.email_verified %}success{% else %}warning{% endif %}">
-                {% if profile.email_verified %}✓ {{ ui.email_verified_yes }}{% else %}{{ ui.email_verified_no }}{% endif %}
-            </span>
-        </strong>
+        <strong><span class="badge {% if profile.email_verified %}success{% else %}warning{% endif %}">{% if profile.email_verified %}&#10003; {{ ui.email_verified_yes }}{% else %}{{ ui.email_verified_no }}{% endif %}</span></strong>
     </div>
-    <div>
-        <span>{{ ui.current_plan }}</span>
-        <strong>{{ plan_name }}</strong>
-    </div>
+    <div><span>{{ ui.current_plan }}</span><strong>{{ plan_name }}</strong></div>
 </section>
 
 <section class="panel form-panel">
@@ -48,9 +35,22 @@
             </div>
             {% endfor %}
         </div>
-        <div class="form-actions">
-            <button type="submit" class="btn btn-primary">{{ ui.save_profile }}</button>
-        </div>
+        <div class="form-actions"><button type="submit" class="btn btn-primary">{{ ui.save_profile }}</button></div>
     </form>
 </section>
+
+{% if request.user.is_superuser or profile.organization.owner_id == request.user.pk %}
+<section class="panel backup-panel">
+    <h2>{% if current_language == 'ru' %}Резервная копия компании{% else %}Company backup{% endif %}</h2>
+    <p class="help-text">{% if current_language == 'ru' %}Копия содержит товары, категории, клиентов, поставщиков, продажи, закупки и движения склада. Пароли, аккаунты сотрудников и платёжные данные не включаются.{% else %}The file includes products, categories, customers, suppliers, sales, purchases, and stock movements. Passwords, staff accounts, and payment details are not included.{% endif %}</p>
+    <a class="btn btn-secondary" href="{% url 'export_warehouse_backup' %}">{% if current_language == 'ru' %}Скачать копию JSON{% else %}Download JSON backup{% endif %}</a>
+    <form method="post" enctype="multipart/form-data" action="{% url 'restore_warehouse_backup' %}" class="backup-restore-form">
+        {% csrf_token %}
+        <label for="backup-file">{% if current_language == 'ru' %}Файл резервной копии (до 10 МБ){% else %}Backup file (up to 10 MB){% endif %}</label>
+        <input id="backup-file" type="file" name="backup_file" accept=".json,application/json" required>
+        <label class="backup-confirm"><input type="checkbox" name="confirm_restore" value="yes" required> {% if current_language == 'ru' %}Я понимаю, что восстановление заменит текущие складские данные.{% else %}I understand that restoring will replace the current warehouse data.{% endif %}</label>
+        <button type="submit" class="btn btn-danger">{% if current_language == 'ru' %}Восстановить из копии{% else %}Restore from backup{% endif %}</button>
+    </form>
+</section>
+{% endif %}
 {% endblock %}

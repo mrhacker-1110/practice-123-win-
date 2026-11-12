@@ -37,6 +37,10 @@
             <div class="field">
                 <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                 {{ field }}
+                {% if field.name == 'sku' and not form.instance.pk %}
+                <button type="button" class="btn btn-secondary barcode-scan-button" id="barcode-scan-button">{% if current_language == 'ru' %}Сканировать штрихкод{% else %}Scan barcode{% endif %}</button>
+                <small id="barcode-scan-status" class="help-text" role="status" aria-live="polite"></small>
+                {% endif %}
                 {% if field.help_text %}<small class="help-text">{{ field.help_text }}</small>{% endif %}
                 {% if field.errors %}
                     <div class="error">{{ field.errors }}</div>
